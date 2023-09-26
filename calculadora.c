@@ -1,29 +1,40 @@
 #include <stdio.h>
 #include <string.h>
 
-void removezeros(char strc[], char dest[])
+//função que removera os zeros a esquerda
+void removezeros(char c[])
 {
-    int tamanhoc = strlen(strc);
-    int i = 0;
-    int j = 0;
-    if (strc[i] == '-')
+
+    int i = 0, j = 0, x0 = 0;
+    int tam = strlen(c);
+    for (i = 0; i < tam; i++)
     {
-        dest[j++] = strc[i++];
+    // ao achar um numero diferente de 0 a variavel x0 fica igual a 1
+        if (c[i] != '0')
+        {
+            x0 = 1;
+            break;
+        }
     }
-    for (i = 1; i < tamanhoc && strc[i] == '0'; i++)
+
+    if (x0)
     {
+    /* caso tenha 0 ele entrara nesse if e passara os caracteres da antiga string pra essa
+     porém sem os zeros a esquerda*/
+        for (; i < tam; i++)
+        {
+            c[j++] = c[i];
+        }
+        c[j] = '\0'; 
     }
-    for (; i < tamanhoc; i++)
+    else
     {
-        dest[j++] = strc[i];
+        c[0] = '\0';
     }
-    if (j == 1 && dest[0] == '-')
-    {
-        dest[j++] = '0';
-    }
-    dest[j] = '\0';
 }
+//função de somas
 void soma(char a[], char b[], char c[])
+
 {
     int i = strlen(a) - 1;
     int j = strlen(b) - 1;
@@ -31,7 +42,8 @@ void soma(char a[], char b[], char c[])
     int carry = 0;
     int x, y, z;
     char aux;
-
+    /*aqui é um laço que começa no final da string e transoforma o caractere em um int usando
+    tabela ASCII, e faz a soma juntamante com o carry que é um emprestimo caso seja necessario*/
     while (i >= 0 || j >= 0 || carry)
     {
         x = (i >= 0) ? (a[i] - '0') : 0;
@@ -44,6 +56,7 @@ void soma(char a[], char b[], char c[])
         if (j >= 0)
             j--;
     }
+    //inverte a string resutado porque começamos no final da string porém armazenamos no inicio 
     int p = k - 1;
     int q = 0;
     for (; q < p; p--, q++)
@@ -52,9 +65,9 @@ void soma(char a[], char b[], char c[])
         c[q] = c[p];
         c[p] = aux;
     }
-    c[k] = '\0';
+    c[k] = '\0'; // para sinalizar o final da string
 }
-
+//função de subtração 
 void sub(char a[], char b[], char c[])
 {
     int tamanhoa = strlen(a);
@@ -62,119 +75,104 @@ void sub(char a[], char b[], char c[])
 
     int max = (tamanhoa > tamanhob) ? tamanhoa : tamanhob;
 
-    if (tamanhob < tamanhoa)
-    {
-
-        for (int i = tamanhoa, j = tamanhob; i >= 0; i--, j--)
-        {
-            if (j < 0)
-            {
-                b[i] = '0';
-            }
-            else
-            {
-                b[i] = b[j];
-            }
-        }
-    }
-    if (tamanhoa < tamanhob)
-    {
-
-        for (int i = tamanhob, j = tamanhoa; i >= 0; i--, j--)
-        {
-            if (j < 0)
-            {
-                a[i] = '0';
-            }
-            else
-            {
-                a[i] = a[j];
-            }
-        }
-    }
-    int i = max - 1;
-    int j = max - 1;
-    int k = 0;
+    int k = max;
     int borrow = 0;
     int x, y, z;
 
-    int comparacao = strcmp(a, b);
-    if (comparacao < 0)
+     // compara para testar se os numeros são iguais e ja retornar o resultado 0
+        if (strcmp(a,b) == 0){
+        c[0]= '0';
+        c[1]= '\0';
+        return;
+    }  
+     //teste se é negativo para no final colocarmos o sinal caso negativo vire igual a 1
+    int neg = 0;
+    if (tamanhoa < tamanhob || (tamanhoa == tamanhob && strcmp(a, b) < 0))
     {
-        c[k++] = '-';
-        char aux[1000];
-        strcpy(aux, a);
-        strcpy(a, b);
-        strcpy(b, aux);
+        neg = 1;
     }
-    else if (comparacao == 0)
+    for (int i = 0; i < max; i++)
     {
-
-        c[k++] = '0';
-    }
-
-    while (i >= 0 || j >= 0 || borrow)
-    {
-        x = (i >= 0) ? (a[i] - '0' - i) : 0;
-        y = (j >= 0) ? (b[j] - '0' - j) : 0;
-        z = x - y - borrow;
-        if (z < 0)
+        //subtraindo tbm usando a tebela ASCII, para tranformar um caractere em int 
+        x = (i < tamanhoa) ? a[tamanhoa - i - 1] - '0' : 0;
+        y = (i < tamanhob) ? b[tamanhob - i - 1] - '0' : 0;
+        /*operaçoes para ambos os casos, sendo negativo ou não, e não se faz necessario
+        inverter a string pois ja armazenei o resultado no lugar correto
+        borrow é um emprestimo feito quando necessario*/
+        if (neg)
         {
-            z += 10;
-            borrow = 1;
+            z = y - x - borrow;
+
+            if (y - borrow < x)
+            {
+                borrow = 1;
+            }
+            else
+            {
+                borrow = 0;
+            }
+            if (z < 0)
+            {
+                z += 10;
+                borrow = 1;
+            }
+            c[k - i - 1] = z + '0';//armazenado no lugar correto
         }
         else
         {
-            borrow = 0;
+            z = x - y - borrow;
+            if (x - borrow < y)
+            {
+                borrow = 1;
+            }
+            else
+            {
+                borrow = 0;
+            }
+            if (z < 0)
+            {
+                z += 10;
+                borrow = 1;
+            }
+            c[k - i - 1] = z + '0';//armazenado no lugar correto
         }
-        c[k++] = z + '0';
-        if (i >= 0)
-            i--;
-        if (j >= 0)
-            j--;
-    }
 
-    int p = k - 1;
-    int q = 0;
-    for (; q < p; p--, q++)
-    {
-        int aux = c[q];
-        c[q] = c[p];
-        c[p] = aux;
     }
-
-    if (c[k - 1] == '-')
+    c[max] = '\0';// finalaziando a string resultado
+    removezeros(c); //removendo zeros quando necessario
+   
+    // colocando o sinal '-'no primiero digito da string, quando negativo for igual 1,
+    if (neg)
     {
-        for (int p = k - 1; p >= 0; p--)
+        int res = strlen(c);
+        for (int j = res; j >= 0; j--)
         {
-            c[p + 1] = c[p];
+            c[j + 1] = c[j];
         }
         c[0] = '-';
     }
-    c[k] = '\0';
-    removezeros(c, c);
-    if (c[0] == '\0')
-    {
-        strcpy(c, "0");
-    }
 }
+//função de multiplicação
 void mult(char a[], char b[], char c[])
 {
-
     int tamanhoa = strlen(a);
     int tamanhob = strlen(b);
     int tamanhoc = tamanhob + tamanhoa;
     int resultado[tamanhoc];
     int carry = 0;
     int soma;
-
-        if(a == '0'|| b == '0'){
-        c[0] = "0";
-        c[tamanhoc + 1] = '\0';
-    }
-    
+    // caso as string 'a' ou 'b' seja 0 ja retorna 0
+     if(a[0] == '0'|| b[0] == '0'){
+        c[0]= '0';
+        c[1]= '\0';
+        return;
+         }
+    // defini todas as posições de "resultado" para 0
     memset(resultado, 0, sizeof(resultado));
 
+    /* laço que realiza as operaçoes de multplicação também usando tabela 
+     ASCII, armazena em um vetor resultado dps soma '0' para novamente transformar
+    em string, porem armazena de forma inversa, assim como na soma */
     for (int i = 0; i < tamanhoa; i++)
     {
         for (int j = 0; j < tamanhob; j++)
@@ -190,7 +188,7 @@ void mult(char a[], char b[], char c[])
         c[i] = (soma % 10) + '0';
         carry = soma / 10;
     }
-
+    // invertendo a string para que esteja na ordem correta 
     int p = tamanhoc - 1;
     int q = 0;
     for (; q < p; p--, q++)
@@ -199,17 +197,16 @@ void mult(char a[], char b[], char c[])
         c[q] = c[p];
         c[p] = aux;
     }
+    // caso tenha zeros a esquerda, chama a função remove zeros
     if (c[0] == '0')
     {
-        removezeros(c, c);
+        removezeros(c);
     }
-    for (int i = 0; tamanhoc > 0 && c[i] == '0'; i++)
-    {
-        tamanhoc--;
-    }
-    c[tamanhoc + 1] = '\0';
+    c[tamanhoc + 1] = '\0'; // finalizar a string 
 }
 
+/* aqui é a main onde será declarado o numero de operações e quais operações, e os numeros
+que serão usados nelas */
 int main()
 {
     int n, i;
@@ -218,26 +215,29 @@ int main()
     getchar();
     for (i = 0; i < n; i++)
     {
+        // perguntando os numeros e a operação
         scanf("%s", a);
         scanf("%s", b);
         int o;
         scanf("%d", &o);
         if (o == 1)
         {
-            soma(a, b, c);
+            soma(a, b, c);//chamando a função
             printf("%s\n", c);
         }
 
         if (o == 2)
         {
-            sub(a, b, c);
+            sub(a, b, c);//chamando a função
             printf("%s\n", c);
         }
+        
         if (o == 3)
-        {
-            mult(a, b, c);
+        { 
+            mult(a, b, c);//chamando a função
             printf("%s\n", c);
-        }
+            }
     }
-    return 0;
-}
+    return 0;    
+ }
+ 
